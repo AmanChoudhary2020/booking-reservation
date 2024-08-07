@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Booking</title>
+</head>
+
+<body>
+    <header>
+        <h1>Create a Booking</h1>
+    </header>
+    <main>
+        <div>
+            <!-- Button to navigate back to the Bookings page -->
+            <a href="/bookings" class="button">Back to Bookings</a>
+        </div>
+        <form action="/createBooking" method="post">
+            <fieldset>
+                <legend>Booking Details</legend>
+                <label for="inventoryType">Inventory Type:</label>
+                <select id="inventoryType" name="inventoryType" required>
+                    <option value="Flight">Flight</option>
+                    <option value="Hotel">Hotel</option>
+                </select>
+
+                <div id="flightDetails">
+                    <label for="originCity">Origin City:</label>
+                    <input type="text" id="originCity" name="originCity">
+
+                    <label for="destinationCity">Destination City:</label>
+                    <input type="text" id="destinationCity" name="destinationCity">
+
+                    <label for="airlineCode">Airline Code:</label>
+                    <input type="text" id="airlineCode" name="airlineCode">
+                </div>
+
+                <div id="hotelDetails" style="display: none;">
+                    <label for="hotelName">Hotel Name:</label>
+                    <input type="text" id="hotelName" name="hotelName">
+
+                    <label for="roomType">Room Type:</label>
+                    <select id="roomType" name="roomType">
+                        <option value="1BD">1 Bedroom</option>
+                        <option value="2BD">2 Bedrooms</option>
+                        <option value="3BD">3 Bedrooms</option>
+                    </select>
+                </div>
+
+                <label for="startDate">Start Date:</label>
+                <input type="date" id="startDate" name="startDate" required>
+
+                <label for="endDate">End Date:</label>
+                <input type="date" id="endDate" name="endDate" required>
+            </fieldset>
+
+            <fieldset>
+                <legend>Payment Details</legend>
+                <label for="cardLast4">Last 4 digits of Card:</label>
+                <input type="text" id="cardLast4" name="cardLast4" maxlength="4" required>
+
+                <label for="baseAmount">Base Amount:</label>
+                <input type="number" id="baseAmount" name="baseAmount" step="0.01" required>
+
+                <label for="taxAmount">Tax Amount:</label>
+                <input type="number" id="taxAmount" name="taxAmount" step="0.01" required>
+
+                <label for="totalAmount">Total Amount:</label>
+                <input type="number" id="totalAmount" name="totalAmount" step="0.01" required>
+
+                <label for="currency">Currency:</label>
+                <input type="text" id="currency" name="currency" required>
+            </fieldset>
+
+            <button type="submit">Create Booking</button>
+        </form>
+    </main>
+
+    <script>
+        // JavaScript to toggle visibility of flight and hotel details
+        document.getElementById('inventoryType').addEventListener('change', function () {
+            var flightDetails = document.getElementById('flightDetails');
+            var hotelDetails = document.getElementById('hotelDetails');
+            if (this.value === 'Flight') {
+                flightDetails.style.display = 'block';
+                hotelDetails.style.display = 'none';
+            } else if (this.value === 'Hotel') {
+                flightDetails.style.display = 'none';
+                hotelDetails.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+
+</html>

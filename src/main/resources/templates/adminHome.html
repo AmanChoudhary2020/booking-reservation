@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Home</title>
+</head>
+
+<body>
+    <header>
+        <h1>Admin Dashboard</h1>
+        <nav>
+            <ul>
+                <li><a href="/bookings">Bookings</a></li>
+                <li><a href="/invoices">Invoices</a></li>
+                <li><a href="/reports">Reports</a></li> <!-- Admin-specific page -->
+                <li>
+                    <form action="/logout" method="post"><input type="submit" value="Logout"></form>
+                </li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <p>Welcome, Admin! Here you can manage all company bookings, view invoices, and access reports.</p>
+    </main>
+</body>
+
+</html>

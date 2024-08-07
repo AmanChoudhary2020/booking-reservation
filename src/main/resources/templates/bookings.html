@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Bookings</title>
+</head>
+
+<body>
+    <header>
+        <h1>Your Bookings</h1>
+    </header>
+    <main>
+        <div>
+            <!-- Button to navigate to the Create Booking page -->
+            <a href="/createBooking" class="button">Create New Booking</a>
+            <!-- Button to navigate back to Home -->
+            <a href="/home" class="button">Back to Home</a>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Inventory Type</th>
+                    <th>Origin</th>
+                    <th>Destination</th>
+                    <th>Hotel Name</th>
+                    <th>Airline Code</th>
+                    <th>Room Type</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Card Last 4</th>
+                    <th>Total Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="booking : ${bookings}">
+                    <td th:text="${booking.inventoryType}">Inventory Type</td>
+                    <td th:text="${booking.originCity}">Origin City</td>
+                    <td th:text="${booking.destinationCity}">Destination City</td>
+                    <td th:text="${booking.hotelName}">Hotel Name</td>
+                    <td th:text="${booking.airlineCode}">Airline Code</td>
+                    <td th:text="${booking.roomType}">Room Type</td>
+                    <td th:text="${booking.startDate}">Start Date</td>
+                    <td th:text="${booking.endDate}">End Date</td>
+                    <td th:text="${booking.cardLast4}">Card Last 4</td>
+                    <td th:text="${booking.totalAmount}">Total Amount</td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+    <style>
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 20px 0;
+            background-color: #007bff;
+            color: #fff;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</body>
+
+</html>

@@ -8,12 +8,27 @@ public class AppUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(unique = true, nullable = false)
     private String username;
+
+    @Column(nullable = false)
     private String password;
+
+    @Column(nullable = false)
     private String firstName;
+
+    @Column(nullable = false)
     private String lastName;
-    private String company;
+
+    @ManyToOne()
+    @JoinColumn(name = "company_id", nullable = false)
+    private Company company;
+
+    @Column(nullable = false)
     private String role;
+
+    // Getters and setters
 
     public Long getId() {
         return id;
@@ -55,11 +70,11 @@ public class AppUser {
         this.lastName = lastName;
     }
 
-    public String getCompany() {
+    public Company getCompany() {
         return company;
     }
 
-    public void setCompany(String company) {
+    public void setCompany(Company company) {
         this.company = company;
     }
 
@@ -70,5 +85,4 @@ public class AppUser {
     public void setRole(String role) {
         this.role = role;
     }
-
 }

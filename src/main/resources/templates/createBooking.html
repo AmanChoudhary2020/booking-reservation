@@ -16,7 +16,7 @@
             <!-- Button to navigate back to the Bookings page -->
             <a href="/bookings" class="button">Back to Bookings</a>
         </div>
-        <form action="/createBooking" method="post">
+        <form id="createBookingForm">
             <fieldset>
                 <legend>Booking Details</legend>
                 <label for="inventoryType">Inventory Type:</label>
@@ -78,7 +78,6 @@
     </main>
 
     <script>
-        // JavaScript to toggle visibility of flight and hotel details
         document.getElementById('inventoryType').addEventListener('change', function () {
             var flightDetails = document.getElementById('flightDetails');
             var hotelDetails = document.getElementById('hotelDetails');
@@ -89,6 +88,51 @@
                 flightDetails.style.display = 'none';
                 hotelDetails.style.display = 'block';
             }
+        });
+
+        document.getElementById('createBookingForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            // Get the selected inventory type
+            const inventoryType = document.getElementById('inventoryType').value;
+
+            // Prepare the form data
+            const formData = {
+                inventoryType: inventoryType,
+                origin: inventoryType === 'Flight' ? document.getElementById('originCity').value : null,
+                destination: inventoryType === 'Flight' ? document.getElementById('destinationCity').value : null,
+                airlineCode: inventoryType === 'Flight' ? document.getElementById('airlineCode').value : null,
+                hotelName: inventoryType === 'Hotel' ? document.getElementById('hotelName').value : null,
+                roomType: inventoryType === 'Hotel' ? document.getElementById('roomType').value : null,
+                startDate: document.getElementById('startDate').value,
+                endDate: document.getElementById('endDate').value,
+                status: "CONFIRMED",
+                last4DigitsCard: document.getElementById('cardLast4').value,
+                totalAmount: document.getElementById('totalAmount').value,
+                currency: document.getElementById('currency').value
+            };
+
+            // Send a POST request to the /bookings endpoint
+            fetch('/bookings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.href = '/bookings'; // Redirect to bookings page
+                    } else {
+                        return response.json().then(data => {
+                            throw new Error(data.message || 'Booking creation failed');
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Booking creation failed: ' + error.message);
+                });
         });
     </script>
 </body>

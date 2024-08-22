@@ -7,9 +7,17 @@
 
 <body>
     <h1>Login</h1>
+
+    <!-- Display error message if authentication fails -->
+    <div th:if="${param.error}" style="color: red;">
+        <p>Invalid username or password.</p>
+    </div>
+
+    <!-- Display error message from session if it exists -->
     <div th:if="${session.error}" style="color: red;">
         <p th:text="${session.error}"></p>
     </div>
+
     <form th:action="@{/login}" method="post">
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" required>

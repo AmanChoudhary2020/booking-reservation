@@ -4,6 +4,69 @@
 <head>
     <meta charset="UTF-8">
     <title>Bookings</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        header {
+            background-color: #002f4b;
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px;
+            background-color: #003d6b;
+            color: #fff;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #002c49;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #002f4b;
+            color: #fff;
+        }
+
+        tr:nth-child(even) {
+            background-color: #e9ecef;
+        }
+
+        .status-confirmed {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
 </head>
 
 <body>
@@ -30,41 +93,30 @@
                     <th>End Date</th>
                     <th>Card Last 4</th>
                     <th>Total Amount</th>
+                    <th>Currency</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody>
                 <tr th:each="booking : ${bookings}">
                     <td th:text="${booking.inventoryType}">Inventory Type</td>
-                    <td th:text="${booking.originCity}">Origin City</td>
-                    <td th:text="${booking.destinationCity}">Destination City</td>
+                    <td th:text="${booking.origin}">Origin</td>
+                    <td th:text="${booking.destination}">Destination</td>
                     <td th:text="${booking.hotelName}">Hotel Name</td>
                     <td th:text="${booking.airlineCode}">Airline Code</td>
                     <td th:text="${booking.roomType}">Room Type</td>
                     <td th:text="${booking.startDate}">Start Date</td>
                     <td th:text="${booking.endDate}">End Date</td>
-                    <td th:text="${booking.cardLast4}">Card Last 4</td>
+                    <td th:text="${booking.last4DigitsCard}">Card Last 4</td>
                     <td th:text="${booking.totalAmount}">Total Amount</td>
+                    <td th:text="${booking.currency}">Currency</td>
+                    <td th:text="${booking.status}"
+                        th:classappend="${booking.status == 'CONFIRMED'} ? 'status-confirmed' : ''">
+                    </td>
                 </tr>
             </tbody>
         </table>
     </main>
-    <style>
-        .button {
-            display: inline-block;
-            padding: 10px 20px;
-            margin: 20px 0;
-            background-color: #007bff;
-            color: #fff;
-            text-align: center;
-            text-decoration: none;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-
-        .button:hover {
-            background-color: #0056b3;
-        }
-    </style>
 </body>
 
 </html>

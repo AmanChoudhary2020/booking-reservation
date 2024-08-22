@@ -47,7 +47,9 @@
             password: document.getElementById('password').value,
             firstName: document.getElementById('firstName').value,
             lastName: document.getElementById('lastName').value,
-            company: document.getElementById('company').value,
+            company: {
+                companyName: document.getElementById('company').value
+            },
             role: document.getElementById('role').value
         };
 

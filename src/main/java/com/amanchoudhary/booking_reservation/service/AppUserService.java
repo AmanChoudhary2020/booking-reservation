@@ -17,11 +17,6 @@ public class AppUserService implements UserDetailsService {
     @Autowired
     private AppUserRepository userRepository;
 
-    public enum UserRole {
-        USER,
-        ADMIN
-    }
-
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<AppUser> appUser = userRepository.findByUsername(username);
@@ -40,20 +35,4 @@ public class AppUserService implements UserDetailsService {
     public AppUser findByUsername(String username) {
         return userRepository.findByUsername(username).orElse(null);
     }
-
-    // public void registerUser(String username, String password, String firstName,
-    // String lastName, String company,
-    // String role) {
-    // // Create a new AppUser instance with the provided details
-    // AppUser newUser = new AppUser();
-    // newUser.setUsername(username);
-    // newUser.setPassword(password); // You should hash the password before saving
-    // newUser.setFirstName(firstName);
-    // newUser.setLastName(lastName);
-    // newUser.setCompanyId(company);
-    // newUser.setRole(role);
-
-    // // Save the new user to the repository
-    // userRepository.save(newUser);
-    // }
 }

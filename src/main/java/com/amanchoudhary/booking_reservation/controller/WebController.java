@@ -4,13 +4,23 @@ import com.amanchoudhary.booking_reservation.service.AppUserService;
 import com.amanchoudhary.booking_reservation.service.BookingService;
 import com.amanchoudhary.booking_reservation.model.AppUser;
 import com.amanchoudhary.booking_reservation.model.Booking;
+import com.amanchoudhary.booking_reservation.model.Transaction;
+import com.amanchoudhary.booking_reservation.model.TransactionType;
+import com.amanchoudhary.booking_reservation.repository.BookingRepository;
+import com.amanchoudhary.booking_reservation.repository.TransactionRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Controller
@@ -18,6 +28,12 @@ public class WebController {
 
     @Autowired
     private AppUserService appUserService;
+
+    @Autowired
+    private BookingRepository bookingRepository;
+
+    @Autowired
+    private TransactionRepository transactionRepository;
 
     @Autowired
     private BookingService bookingService;
@@ -46,7 +62,6 @@ public class WebController {
             AppUser user = appUserService.findByUsername(username);
 
             if (user != null) {
-                // Check the user's role
                 if ("ADMIN".equals(user.getRole())) {
                     return "adminHome";
                 } else if ("USER".equals(user.getRole())) {
@@ -75,4 +90,5 @@ public class WebController {
     public String showCreateBookingForm() {
         return "createBooking";
     }
+
 }

@@ -40,6 +40,25 @@
             background-color: #002c49;
         }
 
+        .cancel-button {
+            background-color: #dc3545;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .cancel-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .cancel-button:hover:not(:disabled) {
+            background-color: #c82333;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -66,6 +85,27 @@
             color: green;
             font-weight: bold;
         }
+
+        .status-cancelled {
+            color: red;
+            font-weight: bold;
+        }
+
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f8d7da;
+            color: #721c24;
+            font-size: 16px;
+        }
+
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+        }
     </style>
 </head>
 
@@ -75,11 +115,14 @@
     </header>
     <main>
         <div>
-            <!-- Button to navigate to the Create Booking page -->
             <a href="/createBooking" class="button">Create New Booking</a>
-            <!-- Button to navigate back to Home -->
             <a href="/home" class="button">Back to Home</a>
         </div>
+
+        <div id="statusMessage" class="message" style="display: none;">
+            <p id="statusMessageText"></p>
+        </div>
+
         <table>
             <thead>
                 <tr>
@@ -95,10 +138,11 @@
                     <th>Total Amount</th>
                     <th>Currency</th>
                     <th>Status</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
-                <tr th:each="booking : ${bookings}">
+                <tr th:each="booking : ${bookings}" th:id="'booking-' + ${booking.id}">
                     <td th:text="${booking.inventoryType}">Inventory Type</td>
                     <td th:text="${booking.origin}">Origin</td>
                     <td th:text="${booking.destination}">Destination</td>
@@ -111,12 +155,73 @@
                     <td th:text="${booking.totalAmount}">Total Amount</td>
                     <td th:text="${booking.currency}">Currency</td>
                     <td th:text="${booking.status}"
-                        th:classappend="${booking.status == 'CONFIRMED'} ? 'status-confirmed' : ''">
+                        th:classappend="${booking.status == 'CONFIRMED'} ? 'status-confirmed' : (${booking.status == 'CANCELLED'} ? 'status-cancelled' : '')">
+                    </td>
+                    <td>
+                        <form th:action="@{/bookings/{bookingId}/cancel(bookingId=${booking.id})}" method="post"
+                            class="cancel-form">
+                            <button type="submit" class="cancel-button"
+                                th:disabled="${booking.status == 'CANCELLED'}">Cancel</button>
+                        </form>
                     </td>
                 </tr>
             </tbody>
         </table>
     </main>
+
+    <script>
+        document.querySelectorAll('.cancel-form').forEach(form => {
+            form.addEventListener('submit', function (event) {
+                event.preventDefault(); // Prevent the default form submission
+
+                fetch(this.action, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: new URLSearchParams(new FormData(this)).toString()
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        const statusMessage = document.getElementById('statusMessage');
+                        const statusMessageText = document.getElementById('statusMessageText');
+                        const row = this.closest('tr'); // Get the closest table row
+
+                        if (data.success) {
+                            statusMessage.className = 'message success-message';
+                            statusMessageText.textContent = 'Booking has been cancelled successfully';
+
+                            // Update the status in the row
+                            const statusCell = row.querySelector('td:last-child').previousElementSibling; // Get the status cell
+                            statusCell.textContent = 'CANCELLED';
+                            statusCell.classList.remove('status-confirmed');
+                            statusCell.classList.add('status-cancelled'); // Add class for styling
+                            row.querySelector('form').querySelector('button').disabled = true; // Disable the cancel button
+
+                        } else {
+                            statusMessage.className = 'message';
+                            statusMessageText.textContent = 'Cannot cancel booking that has already started';
+                        }
+
+                        statusMessage.style.display = 'block';
+
+                        // Optionally, you can redirect to the bookings page after showing the message
+                        // setTimeout(() => {
+                        //     window.location.href = '/bookings';
+                        // }, 2000); // Adjust the delay as needed
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        const statusMessage = document.getElementById('statusMessage');
+                        const statusMessageText = document.getElementById('statusMessageText');
+                        statusMessage.className = 'message';
+                        statusMessageText.textContent = 'An error occurred while processing your request';
+                        statusMessage.style.display = 'block';
+                    });
+            });
+        });
+    </script>
 </body>
 
 </html>

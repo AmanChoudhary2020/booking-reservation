@@ -5,6 +5,112 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Booking</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        header {
+            background-color: #002f4b;
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px;
+            background-color: #003d6b;
+            color: #fff;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #002c49;
+        }
+
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        fieldset {
+            border: none;
+            margin-bottom: 20px;
+        }
+
+        legend {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button[type="submit"] {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #003d6b;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #002c49;
+        }
+
+        .cancel-button {
+            background-color: #dc3545;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .cancel-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .cancel-button:hover:not(:disabled) {
+            background-color: #c82333;
+        }
+    </style>
 </head>
 
 <body>
@@ -13,7 +119,6 @@
     </header>
     <main>
         <div>
-            <!-- Button to navigate back to the Bookings page -->
             <a href="/bookings" class="button">Back to Bookings</a>
         </div>
         <form id="createBookingForm">
@@ -58,7 +163,7 @@
             <fieldset>
                 <legend>Payment Details</legend>
                 <label for="cardLast4">Last 4 digits of Card:</label>
-                <input type="text" id="cardLast4" name="cardLast4" maxlength="4" required>
+                <input type="number" id="cardLast4" name="cardLast4" min="0" max="9999" maxlength="4" required>
 
                 <label for="baseAmount">Base Amount:</label>
                 <input type="number" id="baseAmount" name="baseAmount" step="0.01" required>
@@ -122,7 +227,7 @@
             })
                 .then(response => {
                     if (response.ok) {
-                        window.location.href = '/bookings'; // Redirect to bookings page
+                        window.location.href = '/bookings';
                     } else {
                         return response.json().then(data => {
                             throw new Error(data.message || 'Booking creation failed');

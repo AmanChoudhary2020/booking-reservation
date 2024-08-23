@@ -106,6 +106,15 @@
             color: #155724;
             border-color: #c3e6cb;
         }
+
+        .clickable-row {
+            cursor: pointer;
+            transition: background-color 0.3s, text-decoration 0.3s;
+        }
+
+        .clickable-row:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 
@@ -142,7 +151,8 @@
                 </tr>
             </thead>
             <tbody>
-                <tr th:each="booking : ${bookings}" th:id="'booking-' + ${booking.id}">
+                <tr th:each="booking : ${bookings}" th:id="'booking-' + ${booking.id}" class="clickable-row"
+                    th:data-id="${booking.id}">
                     <td th:text="${booking.inventoryType}">Inventory Type</td>
                     <td th:text="${booking.origin}">Origin</td>
                     <td th:text="${booking.destination}">Destination</td>
@@ -170,6 +180,13 @@
     </main>
 
     <script>
+        document.querySelectorAll('.clickable-row').forEach(row => {
+            row.addEventListener('click', function () {
+                const bookingId = this.getAttribute('data-id');
+                window.location.href = `/bookings/${bookingId}/invoice`;
+            });
+        });
+
         document.querySelectorAll('.cancel-form').forEach(form => {
             form.addEventListener('submit', function (event) {
                 event.preventDefault(); // Prevent the default form submission
@@ -196,8 +213,8 @@
                             const statusCell = row.querySelector('td:last-child').previousElementSibling; // Get the status cell
                             statusCell.textContent = 'CANCELLED';
                             statusCell.classList.remove('status-confirmed');
-                            statusCell.classList.add('status-cancelled'); // Add class for styling
-                            row.querySelector('form').querySelector('button').disabled = true; // Disable the cancel button
+                            statusCell.classList.add('status-cancelled');
+                            row.querySelector('form').querySelector('button').disabled = true;
 
                         } else {
                             statusMessage.className = 'message';
@@ -205,11 +222,6 @@
                         }
 
                         statusMessage.style.display = 'block';
-
-                        // Optionally, you can redirect to the bookings page after showing the message
-                        // setTimeout(() => {
-                        //     window.location.href = '/bookings';
-                        // }, 2000); // Adjust the delay as needed
                     })
                     .catch(error => {
                         console.error('Error:', error);

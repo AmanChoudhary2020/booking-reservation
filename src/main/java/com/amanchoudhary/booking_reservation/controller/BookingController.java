@@ -8,17 +8,28 @@ import com.amanchoudhary.booking_reservation.model.TransactionType;
 import com.amanchoudhary.booking_reservation.repository.BookingRepository;
 import com.amanchoudhary.booking_reservation.repository.TransactionRepository;
 import com.amanchoudhary.booking_reservation.service.AppUserService;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfWriter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/bookings")
@@ -99,4 +110,82 @@ public class BookingController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/{bookingId}/invoice")
+    public ResponseEntity<InputStreamResource> getInvoice(@PathVariable Long bookingId) throws IOException {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        AppUser user = booking.getUser();
+        Company company = booking.getCompany();
+        List<Transaction> transactions = transactionRepository.findByBookingId(bookingId);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        Document document = new Document();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy");
+
+        try {
+            PdfWriter.getInstance(document, outputStream);
+            document.open();
+
+            // Add company info
+            document.add(new Paragraph("Company Info:"));
+            document.add(new Paragraph("Company Name: " + company.getCompanyName()));
+            document.add(new Paragraph("\n"));
+
+            // Add user info
+            document.add(new Paragraph("User Info:"));
+            document.add(new Paragraph("First Name: " + user.getFirstName()));
+            document.add(new Paragraph("Last Name: " + user.getLastName()));
+            document.add(new Paragraph("Role: " + user.getRole()));
+            document.add(new Paragraph("\n"));
+
+            // Add booking info
+            document.add(new Paragraph("Booking Info:"));
+            document.add(new Paragraph("Inventory Type: " + booking.getInventoryType()));
+
+            // Conditional fields based on inventory type
+            if ("hotel".equalsIgnoreCase(booking.getInventoryType())) {
+                document.add(new Paragraph("Hotel Name: " + booking.getHotelName()));
+                document.add(new Paragraph("Room Type: " + booking.getRoomType()));
+                document.add(new Paragraph("Start Date: " + booking.getStartDate()));
+                document.add(new Paragraph("End Date: " + booking.getEndDate()));
+            } else if ("flight".equalsIgnoreCase(booking.getInventoryType())) {
+                document.add(new Paragraph("Airline Code: " + booking.getAirlineCode()));
+                document.add(new Paragraph("Start Date: " + booking.getStartDate()));
+                document.add(new Paragraph("End Date: " + booking.getEndDate()));
+                document.add(new Paragraph("Origin: " + booking.getOrigin()));
+                document.add(new Paragraph("Destination: " + booking.getDestination()));
+            }
+
+            document.add(new Paragraph("Status: " + booking.getStatus()));
+            document.add(new Paragraph("Card Last 4 Digits: " + booking.getLast4DigitsCard()));
+            document.add(new Paragraph("Total Amount: " + booking.getTotalAmount()));
+            document.add(new Paragraph("Currency: " + booking.getCurrency()));
+            document.add(new Paragraph("\n"));
+
+            // Add transactions info with formatted date
+            document.add(new Paragraph("Transactions Info:"));
+            for (Transaction transaction : transactions) {
+                document.add(new Paragraph("Type: " + transaction.getType()));
+                document.add(new Paragraph("Amount: " + transaction.getAmount()));
+                document.add(new Paragraph("Currency: " + transaction.getCurrency()));
+                document.add(new Paragraph("Date: " + transaction.getCreatedAt().format(formatter)));
+                document.add(new Paragraph("\n"));
+            }
+
+            document.close();
+        } catch (DocumentException e) {
+            throw new IOException("Error while generating PDF", e);
+        }
+
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=invoice-" + bookingId + ".pdf");
+
+        return ResponseEntity
+                .ok()
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(new InputStreamResource(inputStream));
+    }
 }

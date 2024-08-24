@@ -46,6 +46,7 @@ public class BookingController {
 
     @PostMapping
     public Booking createBooking(@RequestBody Booking booking) {
+        System.out.println("CREATE!!");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
 
@@ -102,11 +103,9 @@ public class BookingController {
 
             transactionRepository.save(transaction);
 
-            // Return success response
             response.put("success", true);
             response.put("message", "Booking has been cancelled successfully.");
         } else {
-            // Return failure response
             response.put("success", false);
             response.put("message", "Cannot cancel booking that has already started.");
         }
@@ -192,4 +191,65 @@ public class BookingController {
                 .body(new InputStreamResource(inputStream));
     }
 
+    @PutMapping("/{bookingId}/edit")
+    public Booking updateBooking(@PathVariable Long bookingId, @RequestBody Booking updatedBooking) {
+        // Validate if the ID in the URL matches the ID in the request body
+        if (!bookingId.equals(updatedBooking.getId())) {
+            throw new RuntimeException("Booking ID in the path and body do not match");
+        }
+
+        // Find the existing booking by ID
+        Booking existingBooking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        String existingInventoryType = existingBooking.getInventoryType();
+        String existingHotelName = existingBooking.getHotelName();
+        String existingAirlineCode = existingBooking.getAirlineCode();
+        String existingRoomType = existingBooking.getRoomType();
+
+        // Check if the base or tax amount has changed
+        boolean hasAmountChanged = !existingBooking.getBaseAmount().equals(updatedBooking.getBaseAmount()) ||
+                !existingBooking.getTaxAmount().equals(updatedBooking.getTaxAmount()) ||
+                !existingBooking.getCurrency().equals(updatedBooking.getCurrency());
+
+        // Update allowed booking details
+        existingBooking.setStartDate(updatedBooking.getStartDate());
+        existingBooking.setEndDate(updatedBooking.getEndDate());
+        existingBooking.setLast4DigitsCard(updatedBooking.getLast4DigitsCard());
+        existingBooking.setCurrency(updatedBooking.getCurrency());
+        existingBooking.setBaseAmount(updatedBooking.getBaseAmount());
+        existingBooking.setTaxAmount(updatedBooking.getTaxAmount());
+        existingBooking.setTotalAmount(updatedBooking.getTotalAmount());
+
+        // Conditionally update fields based on inventory type
+        if (existingInventoryType.equals("Flight")) {
+            existingBooking.setAirlineCode(
+                    updatedBooking.getAirlineCode() != null ? updatedBooking.getAirlineCode() : existingAirlineCode);
+            existingBooking.setRoomType(null); // Room type should be null for flights
+        } else if (existingInventoryType.equals("Hotel")) {
+            existingBooking.setHotelName(
+                    updatedBooking.getHotelName() != null ? updatedBooking.getHotelName() : existingHotelName);
+            existingBooking.setRoomType(
+                    updatedBooking.getRoomType() != null ? updatedBooking.getRoomType() : existingRoomType);
+            existingBooking.setAirlineCode(null); // Airline code should be null for hotels
+        }
+
+        Booking savedBooking = bookingRepository.save(existingBooking);
+
+        // If amounts have changed, record the update in the transaction table
+        if (hasAmountChanged) {
+            Transaction transaction = new Transaction();
+            transaction.setBooking(savedBooking);
+            transaction.setType(TransactionType.UPDATE);
+            transaction.setBaseAmount(updatedBooking.getBaseAmount());
+            transaction.setTaxAmount(updatedBooking.getTaxAmount());
+            transaction.setTotalAmount(updatedBooking.getTotalAmount());
+            transaction.setCurrency(updatedBooking.getCurrency());
+            transaction.setCreatedAt(LocalDateTime.now());
+
+            transactionRepository.save(transaction);
+        }
+
+        return savedBooking;
+    }
 }

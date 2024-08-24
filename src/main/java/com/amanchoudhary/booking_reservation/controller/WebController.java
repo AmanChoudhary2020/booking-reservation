@@ -22,6 +22,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 public class WebController {
@@ -84,6 +85,19 @@ public class WebController {
         model.addAttribute("bookings", bookings);
 
         return "bookings";
+    }
+
+    @GetMapping("/bookings/{bookingId}")
+    public String getBookingById(@PathVariable Long bookingId, Model model) {
+        Optional<Booking> bookingOptional = bookingRepository.findById(bookingId);
+
+        if (bookingOptional.isPresent()) {
+            Booking booking = bookingOptional.get();
+            model.addAttribute("booking", booking);
+            return "createBooking";
+        } else {
+            return "redirect:/bookings";
+        }
     }
 
     @GetMapping("/createBooking")

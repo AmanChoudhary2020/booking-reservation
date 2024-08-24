@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Booking</title>
+    <title>Create or Edit Booking</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -115,70 +115,87 @@
 
 <body>
     <header>
-        <h1>Create a Booking</h1>
+        <h1 th:text="${booking != null ? 'Edit Booking' : 'Create a Booking'}">Create a Booking</h1>
     </header>
     <main>
         <div>
             <a href="/bookings" class="button">Back to Bookings</a>
         </div>
         <form id="createBookingForm">
+            <input type="hidden" id="bookingId" name="bookingId" th:value="${booking != null ? booking.id : ''}">
+
             <fieldset>
                 <legend>Booking Details</legend>
                 <label for="inventoryType">Inventory Type:</label>
-                <select id="inventoryType" name="inventoryType" required>
-                    <option value="Flight">Flight</option>
-                    <option value="Hotel">Hotel</option>
+                <select id="inventoryType" name="inventoryType" required th:disabled="${booking != null}">
+                    <option value="Flight" th:selected="${booking != null && booking.inventoryType == 'Flight'}">Flight
+                    </option>
+                    <option value="Hotel" th:selected="${booking != null && booking.inventoryType == 'Hotel'}">Hotel
+                    </option>
                 </select>
 
-                <div id="flightDetails">
+                <div id="flightDetails"
+                    th:style="${booking == null || booking.inventoryType == 'Flight' ? 'display: block;' : 'display: none;'}">
                     <label for="originCity">Origin City:</label>
-                    <input type="text" id="originCity" name="originCity">
+                    <input type="text" id="originCity" name="originCity" th:value="${booking?.origin}"
+                        th:disabled="${booking != null && booking.inventoryType == 'Flight'}">
 
                     <label for="destinationCity">Destination City:</label>
-                    <input type="text" id="destinationCity" name="destinationCity">
+                    <input type="text" id="destinationCity" name="destinationCity" th:value="${booking?.destination}"
+                        th:disabled="${booking != null && booking.inventoryType == 'Flight'}">
 
                     <label for="airlineCode">Airline Code:</label>
-                    <input type="text" id="airlineCode" name="airlineCode">
+                    <input type="text" id="airlineCode" name="airlineCode" th:value="${booking?.airlineCode}">
                 </div>
 
-                <div id="hotelDetails" style="display: none;">
+                <div id="hotelDetails"
+                    th:style="${booking != null && booking.inventoryType == 'Hotel' ? 'display: block;' : 'display: none;'}">
                     <label for="hotelName">Hotel Name:</label>
-                    <input type="text" id="hotelName" name="hotelName">
+                    <input type="text" id="hotelName" name="hotelName" th:value="${booking?.hotelName}"
+                        th:disabled="${booking != null && booking.inventoryType == 'Hotel'}">
 
                     <label for="roomType">Room Type:</label>
                     <select id="roomType" name="roomType">
-                        <option value="1BD">1 Bedroom</option>
-                        <option value="2BD">2 Bedrooms</option>
-                        <option value="3BD">3 Bedrooms</option>
+                        <option value="1BD" th:selected="${booking != null && booking.roomType == '1BD'}">1 Bedroom
+                        </option>
+                        <option value="2BD" th:selected="${booking != null && booking.roomType == '2BD'}">2 Bedrooms
+                        </option>
+                        <option value="3BD" th:selected="${booking != null && booking.roomType == '3BD'}">3 Bedrooms
+                        </option>
                     </select>
                 </div>
 
                 <label for="startDate">Start Date:</label>
-                <input type="date" id="startDate" name="startDate" required>
+                <input type="date" id="startDate" name="startDate" th:value="${booking?.startDate}" required>
 
                 <label for="endDate">End Date:</label>
-                <input type="date" id="endDate" name="endDate" required>
+                <input type="date" id="endDate" name="endDate" th:value="${booking?.endDate}" required>
             </fieldset>
 
             <fieldset>
                 <legend>Payment Details</legend>
                 <label for="cardLast4">Last 4 digits of Card:</label>
-                <input type="number" id="cardLast4" name="cardLast4" min="0" max="9999" maxlength="4" required>
+                <input type="number" id="cardLast4" name="cardLast4" min="0" max="9999" maxlength="4"
+                    th:value="${booking?.last4DigitsCard}" required>
 
                 <label for="baseAmount">Base Amount:</label>
-                <input type="number" id="baseAmount" name="baseAmount" step="0.01" required>
+                <input type="number" id="baseAmount" name="baseAmount" step="0.01" th:value="${booking?.baseAmount}"
+                    required>
 
                 <label for="taxAmount">Tax Amount:</label>
-                <input type="number" id="taxAmount" name="taxAmount" step="0.01" required>
+                <input type="number" id="taxAmount" name="taxAmount" step="0.01" th:value="${booking?.taxAmount}"
+                    required>
 
                 <label for="totalAmount">Total Amount:</label>
-                <input type="number" id="totalAmount" name="totalAmount" step="0.01" required>
+                <input type="number" id="totalAmount" name="totalAmount" step="0.01" th:value="${booking?.totalAmount}"
+                    required>
 
                 <label for="currency">Currency:</label>
-                <input type="text" id="currency" name="currency" required>
+                <input type="text" id="currency" name="currency" th:value="${booking?.currency}" required>
             </fieldset>
 
-            <button type="submit">Create Booking</button>
+            <button type="submit" th:text="${booking != null ? 'Update Booking' : 'Create Booking'}">Create
+                Booking</button>
         </form>
     </main>
 
@@ -198,20 +215,19 @@
         document.getElementById('createBookingForm').addEventListener('submit', function (event) {
             event.preventDefault();
 
-            // Get the selected inventory type
-            const inventoryType = document.getElementById('inventoryType').value;
+            const bookingId = document.getElementById('bookingId').value;
+            const url = bookingId ? `/bookings/${bookingId}/edit` : '/bookings';
+            const method = bookingId ? 'PUT' : 'POST';
 
-            // Prepare the form data
             const formData = {
-                inventoryType: inventoryType,
-                origin: inventoryType === 'Flight' ? document.getElementById('originCity').value : null,
-                destination: inventoryType === 'Flight' ? document.getElementById('destinationCity').value : null,
-                airlineCode: inventoryType === 'Flight' ? document.getElementById('airlineCode').value : null,
-                hotelName: inventoryType === 'Hotel' ? document.getElementById('hotelName').value : null,
-                roomType: inventoryType === 'Hotel' ? document.getElementById('roomType').value : null,
+                inventoryType: document.getElementById('inventoryType').value,
+                origin: document.getElementById('originCity').value,
+                destination: document.getElementById('destinationCity').value,
+                airlineCode: document.getElementById('airlineCode').value,
+                hotelName: document.getElementById('hotelName').value,
+                roomType: document.getElementById('roomType').value,
                 startDate: document.getElementById('startDate').value,
                 endDate: document.getElementById('endDate').value,
-                status: "CONFIRMED",
                 last4DigitsCard: document.getElementById('cardLast4').value,
                 baseAmount: document.getElementById('baseAmount').value,
                 taxAmount: document.getElementById('taxAmount').value,
@@ -219,27 +235,26 @@
                 currency: document.getElementById('currency').value
             };
 
-            // Send a POST request to the /bookings endpoint
-            fetch('/bookings', {
-                method: 'POST',
+            // Include bookingId in the request body if it's an edit
+            if (bookingId) {
+                formData.id = bookingId;
+            }
+
+            fetch(url, {
+                method: method,
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(formData)
-            })
-                .then(response => {
-                    if (response.ok) {
-                        window.location.href = '/bookings';
-                    } else {
-                        return response.json().then(data => {
-                            throw new Error(data.message || 'Booking creation failed');
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Booking creation failed: ' + error.message);
-                });
+            }).then(response => {
+                if (response.ok) {
+                    window.location.href = '/bookings';
+                } else {
+                    console.error('Error:', response.statusText);
+                }
+            }).catch(error => {
+                console.error('Error:', error);
+            });
         });
     </script>
 </body>

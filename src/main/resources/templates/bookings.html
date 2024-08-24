@@ -73,6 +73,24 @@
             background-color: #0056b3;
         }
 
+        .invoice-button.cancelled-invoice {
+            background-color: #007bff;
+            color: #fff;
+            opacity: 1;
+            cursor: pointer;
+        }
+
+        .invoice-button.cancelled-invoice:hover {
+            background-color: #0056b3;
+        }
+
+        .invoice-button.disabled {
+            background-color: #6c757d;
+            color: #fff;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -121,14 +139,9 @@
             border-color: #c3e6cb;
         }
 
-        .clickable-row {
-            cursor: default;
-            text-decoration: none;
-            transition: background-color 0.3s;
-        }
-
-        .clickable-row:hover {
-            background-color: #f1f1f1;
+        .cancel-message {
+            background-color: #f8d7da;
+            color: #721c24;
         }
 
         .no-bookings-message {
@@ -136,6 +149,25 @@
             margin: 20px 0;
             text-align: center;
             color: #555;
+        }
+
+        .clickable-row {
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s, text-decoration 0.3s;
+        }
+
+        .clickable-row:hover {
+            background-color: #f1f1f1;
+        }
+
+        .clickable-row:not(.cancelled):hover td {
+            text-decoration: underline;
+            text-decoration-skip-ink: none;
+        }
+
+        .clickable-row.cancelled {
+            cursor: not-allowed;
         }
     </style>
 </head>
@@ -154,12 +186,10 @@
             <p id="statusMessageText"></p>
         </div>
 
-        <!-- Display this message if there are no bookings -->
         <div th:if="${#lists.isEmpty(bookings)}" class="no-bookings-message">
             <p>You have no bookings yet. Want to make one?</p>
         </div>
 
-        <!-- Display the bookings table if there are bookings -->
         <table th:if="${!#lists.isEmpty(bookings)}">
             <thead>
                 <tr>
@@ -180,7 +210,7 @@
             </thead>
             <tbody>
                 <tr th:each="booking : ${bookings}" th:id="'booking-' + ${booking.id}" class="clickable-row"
-                    th:data-id="${booking.id}">
+                    th:data-id="${booking.id}" th:classappend="${booking.status == 'CANCELLED'} ? 'cancelled' : ''">
                     <td th:text="${booking.inventoryType}">Inventory Type</td>
                     <td th:text="${booking.origin}">Origin</td>
                     <td th:text="${booking.destination}">Destination</td>
@@ -198,7 +228,8 @@
                     <td>
                         <form th:action="@{/bookings/{bookingId}/invoice(bookingId=${booking.id})}" method="get"
                             class="invoice-form">
-                            <button type="submit" class="invoice-button">Invoice</button>
+                            <button type="submit" class="invoice-button"
+                                th:classappend="${booking.status == 'CANCELLED'} ? 'cancelled-invoice' : ''">Invoice</button>
                         </form>
                         <form th:action="@{/bookings/{bookingId}/cancel(bookingId=${booking.id})}" method="post"
                             class="cancel-form">
@@ -212,49 +243,63 @@
     </main>
 
     <script>
+        document.querySelectorAll('.clickable-row').forEach(row => {
+            row.addEventListener('click', function (event) {
+                if (event.target.closest('td:last-child') || this.classList.contains('cancelled')) return;
+
+                const bookingId = this.dataset.id;
+                window.location.href = `/bookings/${bookingId}`;
+            });
+        });
+
         document.querySelectorAll('.cancel-form').forEach(form => {
             form.addEventListener('submit', function (event) {
-                event.preventDefault(); // Prevent the default form submission
+                event.preventDefault();
+
+                const cancelButton = this.querySelector('.cancel-button');
+                cancelButton.disabled = true;
 
                 fetch(this.action, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
                         'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: new URLSearchParams(new FormData(this)).toString()
+                    }
                 })
                     .then(response => response.json())
                     .then(data => {
-                        const statusMessage = document.getElementById('statusMessage');
-                        const statusMessageText = document.getElementById('statusMessageText');
-                        const row = this.closest('tr'); // Get the closest table row
+                        const row = this.closest('tr');
+                        const messageDiv = document.getElementById('statusMessage');
+                        const messageText = document.getElementById('statusMessageText');
 
                         if (data.success) {
-                            statusMessage.className = 'message success-message';
-                            statusMessageText.textContent = 'Booking has been cancelled successfully';
-
-                            // Update the status in the row
-                            const statusCell = row.querySelector('td:last-child').previousElementSibling; // Get the status cell
+                            const statusCell = row.querySelector('td:nth-last-child(2)');
                             statusCell.textContent = 'CANCELLED';
                             statusCell.classList.remove('status-confirmed');
                             statusCell.classList.add('status-cancelled');
-                            row.querySelector('form.cancel-form').querySelector('button').disabled = true; // Disable the cancel button
+                            row.classList.add('cancelled');
 
+                            messageDiv.classList.remove('cancel-message');
+                            messageDiv.classList.add('success-message');
+                            messageText.textContent = data.message;
                         } else {
-                            statusMessage.className = 'message';
-                            statusMessageText.textContent = 'Cannot cancel booking that has already started';
+                            messageDiv.classList.remove('success-message');
+                            messageDiv.classList.add('cancel-message');
+                            messageText.textContent = data.message;
                         }
 
-                        statusMessage.style.display = 'block';
+                        messageDiv.style.display = 'block';
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        const statusMessage = document.getElementById('statusMessage');
-                        const statusMessageText = document.getElementById('statusMessageText');
-                        statusMessage.className = 'message';
-                        statusMessageText.textContent = 'An error occurred while processing your request';
-                        statusMessage.style.display = 'block';
+                        const messageDiv = document.getElementById('statusMessage');
+                        const messageText = document.getElementById('statusMessageText');
+
+                        cancelButton.disabled = false;
+
+                        messageDiv.classList.remove('success-message');
+                        messageDiv.classList.add('cancel-message');
+                        messageText.textContent = 'An error occurred. Please try again later.';
+                        messageDiv.style.display = 'block';
                     });
             });
         });

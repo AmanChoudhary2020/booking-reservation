@@ -5,6 +5,78 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Home</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        header {
+            background-color: #002f4b;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+
+        nav ul li {
+            margin: 0;
+        }
+
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 20px;
+            background-color: #003d6b;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            display: inline-block;
+        }
+
+        nav ul li a:hover {
+            background-color: #002c49;
+        }
+
+        nav ul li form {
+            margin: 0;
+            display: inline-block;
+        }
+
+        nav ul li input[type="submit"] {
+            background-color: #dc3545;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        nav ul li input[type="submit"]:hover {
+            background-color: #c82333;
+        }
+
+        main {
+            padding: 20px;
+            text-align: center;
+        }
+
+        main p {
+            font-size: 18px;
+        }
+    </style>
 </head>
 
 <body>
@@ -13,9 +85,10 @@
         <nav>
             <ul>
                 <li><a href="/bookings">My Bookings</a></li>
-                <li><a href="/invoices">Invoices</a></li>
                 <li>
-                    <form action="/logout" method="post"><input type="submit" value="Logout"></form>
+                    <form action="/logout" method="post">
+                        <input type="submit" value="Logout">
+                    </form>
                 </li>
             </ul>
         </nav>

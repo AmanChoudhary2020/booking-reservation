@@ -63,8 +63,10 @@ public class BookingController {
                 Transaction transaction = new Transaction();
                 transaction.setBooking(savedBooking);
                 transaction.setType(TransactionType.CHARGE);
-                transaction.setAmount(savedBooking.getTotalAmount());
-                transaction.setCurrency(savedBooking.getCurrency());
+                transaction.setBaseAmount(booking.getBaseAmount());
+                transaction.setTaxAmount(booking.getTaxAmount());
+                transaction.setTotalAmount(booking.getTotalAmount());
+                transaction.setCurrency(booking.getCurrency());
                 transaction.setCreatedAt(LocalDateTime.now());
                 transactionRepository.save(transaction);
 
@@ -92,7 +94,9 @@ public class BookingController {
             Transaction transaction = new Transaction();
             transaction.setBooking(booking);
             transaction.setType(TransactionType.REFUND);
-            transaction.setAmount(booking.getTotalAmount());
+            transaction.setBaseAmount(booking.getBaseAmount());
+            transaction.setTaxAmount(booking.getTaxAmount());
+            transaction.setTotalAmount(booking.getTotalAmount());
             transaction.setCurrency(booking.getCurrency());
             transaction.setCreatedAt(LocalDateTime.now());
 
@@ -127,47 +131,46 @@ public class BookingController {
             PdfWriter.getInstance(document, outputStream);
             document.open();
 
-            // Add company info
             document.add(new Paragraph("Company Info:"));
             document.add(new Paragraph("Company Name: " + company.getCompanyName()));
             document.add(new Paragraph("\n"));
 
-            // Add user info
             document.add(new Paragraph("User Info:"));
             document.add(new Paragraph("First Name: " + user.getFirstName()));
             document.add(new Paragraph("Last Name: " + user.getLastName()));
             document.add(new Paragraph("Role: " + user.getRole()));
             document.add(new Paragraph("\n"));
 
-            // Add booking info
             document.add(new Paragraph("Booking Info:"));
             document.add(new Paragraph("Inventory Type: " + booking.getInventoryType()));
 
-            // Conditional fields based on inventory type
             if ("hotel".equalsIgnoreCase(booking.getInventoryType())) {
                 document.add(new Paragraph("Hotel Name: " + booking.getHotelName()));
                 document.add(new Paragraph("Room Type: " + booking.getRoomType()));
                 document.add(new Paragraph("Start Date: " + booking.getStartDate()));
                 document.add(new Paragraph("End Date: " + booking.getEndDate()));
             } else if ("flight".equalsIgnoreCase(booking.getInventoryType())) {
+                document.add(new Paragraph("Origin City: " + booking.getOrigin()));
+                document.add(new Paragraph("Destination City: " + booking.getDestination()));
                 document.add(new Paragraph("Airline Code: " + booking.getAirlineCode()));
                 document.add(new Paragraph("Start Date: " + booking.getStartDate()));
                 document.add(new Paragraph("End Date: " + booking.getEndDate()));
-                document.add(new Paragraph("Origin: " + booking.getOrigin()));
-                document.add(new Paragraph("Destination: " + booking.getDestination()));
             }
 
             document.add(new Paragraph("Status: " + booking.getStatus()));
             document.add(new Paragraph("Card Last 4 Digits: " + booking.getLast4DigitsCard()));
+            document.add(new Paragraph("Base Amount: " + booking.getBaseAmount()));
+            document.add(new Paragraph("Tax Amount: " + booking.getTaxAmount()));
             document.add(new Paragraph("Total Amount: " + booking.getTotalAmount()));
             document.add(new Paragraph("Currency: " + booking.getCurrency()));
             document.add(new Paragraph("\n"));
 
-            // Add transactions info with formatted date
             document.add(new Paragraph("Transactions Info:"));
             for (Transaction transaction : transactions) {
                 document.add(new Paragraph("Type: " + transaction.getType()));
-                document.add(new Paragraph("Amount: " + transaction.getAmount()));
+                document.add(new Paragraph("Base Amount: " + transaction.getBaseAmount()));
+                document.add(new Paragraph("Tax Amount: " + transaction.getTaxAmount()));
+                document.add(new Paragraph("Total Amount: " + transaction.getTotalAmount()));
                 document.add(new Paragraph("Currency: " + transaction.getCurrency()));
                 document.add(new Paragraph("Date: " + transaction.getCreatedAt().format(formatter)));
                 document.add(new Paragraph("\n"));
@@ -188,4 +191,5 @@ public class BookingController {
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(new InputStreamResource(inputStream));
     }
+
 }

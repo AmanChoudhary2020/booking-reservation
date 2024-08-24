@@ -49,6 +49,12 @@ public class Booking {
     @Column(name = "last_4_digits_card")
     private String last4DigitsCard;
 
+    @Column(name = "base_amount")
+    private Double baseAmount;
+
+    @Column(name = "tax_amount")
+    private Double taxAmount;
+
     @Column(name = "total_amount")
     private Double totalAmount;
 
@@ -157,6 +163,22 @@ public class Booking {
 
     public void setLast4DigitsCard(String last4DigitsCard) {
         this.last4DigitsCard = last4DigitsCard;
+    }
+
+    public Double getBaseAmount() {
+        return baseAmount;
+    }
+
+    public void setBaseAmount(Double baseAmount) {
+        this.baseAmount = baseAmount;
+    }
+
+    public Double getTaxAmount() {
+        return taxAmount;
+    }
+
+    public void setTaxAmount(Double taxAmount) {
+        this.taxAmount = taxAmount;
     }
 
     public Double getTotalAmount() {

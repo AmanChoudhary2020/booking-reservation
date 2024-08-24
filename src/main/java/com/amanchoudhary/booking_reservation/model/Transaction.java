@@ -18,8 +18,14 @@ public class Transaction {
     @Column(nullable = false)
     private TransactionType type;
 
-    @Column(nullable = false)
-    private double amount;
+    @Column(name = "base_amount", nullable = false)
+    private double baseAmount;
+
+    @Column(name = "tax_amount", nullable = false)
+    private double taxAmount;
+
+    @Column(name = "total_amount", nullable = false)
+    private double totalAmount;
 
     @Column(nullable = false)
     private String currency;
@@ -51,12 +57,28 @@ public class Transaction {
         this.type = type;
     }
 
-    public double getAmount() {
-        return amount;
+    public double getBaseAmount() {
+        return baseAmount;
     }
 
-    public void setAmount(double amount) {
-        this.amount = amount;
+    public void setBaseAmount(double baseAmount) {
+        this.baseAmount = baseAmount;
+    }
+
+    public double getTaxAmount() {
+        return taxAmount;
+    }
+
+    public void setTaxAmount(double taxAmount) {
+        this.taxAmount = taxAmount;
+    }
+
+    public double getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(double totalAmount) {
+        this.totalAmount = totalAmount;
     }
 
     public String getCurrency() {

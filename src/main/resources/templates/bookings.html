@@ -59,6 +59,20 @@
             background-color: #c82333;
         }
 
+        .invoice-button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .invoice-button:hover {
+            background-color: #0056b3;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -108,12 +122,20 @@
         }
 
         .clickable-row {
-            cursor: pointer;
-            transition: background-color 0.3s, text-decoration 0.3s;
+            cursor: default;
+            text-decoration: none;
+            transition: background-color 0.3s;
         }
 
         .clickable-row:hover {
-            text-decoration: underline;
+            background-color: #f1f1f1;
+        }
+
+        .no-bookings-message {
+            font-size: 18px;
+            margin: 20px 0;
+            text-align: center;
+            color: #555;
         }
     </style>
 </head>
@@ -132,7 +154,13 @@
             <p id="statusMessageText"></p>
         </div>
 
-        <table>
+        <!-- Display this message if there are no bookings -->
+        <div th:if="${#lists.isEmpty(bookings)}" class="no-bookings-message">
+            <p>You have no bookings yet. Want to make one?</p>
+        </div>
+
+        <!-- Display the bookings table if there are bookings -->
+        <table th:if="${!#lists.isEmpty(bookings)}">
             <thead>
                 <tr>
                     <th>Inventory Type</th>
@@ -168,6 +196,10 @@
                         th:classappend="${booking.status == 'CONFIRMED'} ? 'status-confirmed' : (${booking.status == 'CANCELLED'} ? 'status-cancelled' : '')">
                     </td>
                     <td>
+                        <form th:action="@{/bookings/{bookingId}/invoice(bookingId=${booking.id})}" method="get"
+                            class="invoice-form">
+                            <button type="submit" class="invoice-button">Invoice</button>
+                        </form>
                         <form th:action="@{/bookings/{bookingId}/cancel(bookingId=${booking.id})}" method="post"
                             class="cancel-form">
                             <button type="submit" class="cancel-button"
@@ -180,13 +212,6 @@
     </main>
 
     <script>
-        document.querySelectorAll('.clickable-row').forEach(row => {
-            row.addEventListener('click', function () {
-                const bookingId = this.getAttribute('data-id');
-                window.location.href = `/bookings/${bookingId}/invoice`;
-            });
-        });
-
         document.querySelectorAll('.cancel-form').forEach(form => {
             form.addEventListener('submit', function (event) {
                 event.preventDefault(); // Prevent the default form submission
@@ -214,7 +239,7 @@
                             statusCell.textContent = 'CANCELLED';
                             statusCell.classList.remove('status-confirmed');
                             statusCell.classList.add('status-cancelled');
-                            row.querySelector('form').querySelector('button').disabled = true;
+                            row.querySelector('form.cancel-form').querySelector('button').disabled = true; // Disable the cancel button
 
                         } else {
                             statusMessage.className = 'message';

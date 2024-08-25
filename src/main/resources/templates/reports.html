@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Transactions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        header {
+            background-color: #002f4b;
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px;
+            background-color: #003d6b;
+            color: #fff;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #002c49;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #002f4b;
+            color: #fff;
+        }
+
+        tr:nth-child(even) {
+            background-color: #e9ecef;
+        }
+
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f8d7da;
+            color: #721c24;
+            font-size: 16px;
+        }
+
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+        }
+
+        .search-container {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-select,
+        .search-input,
+        .search-date {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        .search-select {
+            width: 200px;
+        }
+
+        .search-input {
+            flex: 1;
+        }
+
+        .search-button,
+        .clear-filters-button {
+            padding: 10px 20px;
+            margin-left: 10px;
+            background-color: #003d6b;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .search-button:hover,
+        .clear-filters-button:hover {
+            background-color: #002c49;
+        }
+
+        .clear-filters-button {
+            background-color: #e0e0e0;
+            color: #333;
+            margin-left: 20px;
+            font-weight: bold;
+        }
+
+        .clear-filters-button:hover {
+            background-color: #b0b0b0;
+        }
+
+        .date-input-container {
+            display: none;
+        }
+
+        .transaction-type-container,
+        .status-container {
+            display: none;
+        }
+    </style>
+    <script>
+        function updateFilters() {
+            var searchType = document.querySelector('select[name="searchType"]').value;
+            var dateInputContainer = document.querySelector('.date-input-container');
+            var searchInput = document.querySelector('.search-input');
+            var transactionTypeContainer = document.querySelector('.transaction-type-container');
+            var statusContainer = document.querySelector('.status-container');
+
+            if (searchType === 'startDate' || searchType === 'endDate') {
+                dateInputContainer.style.display = 'block';
+                searchInput.style.display = 'none';
+                transactionTypeContainer.style.display = 'none';
+                statusContainer.style.display = 'none';
+
+                if (searchType === 'startDate') {
+                    document.querySelector('input[name="startDate"]').style.display = 'block';
+                    document.querySelector('input[name="endDate"]').style.display = 'none';
+                } else if (searchType === 'endDate') {
+                    document.querySelector('input[name="startDate"]').style.display = 'none';
+                    document.querySelector('input[name="endDate"]').style.display = 'block';
+                }
+            } else if (searchType === 'transactionType') {
+                dateInputContainer.style.display = 'none';
+                searchInput.style.display = 'none';
+                transactionTypeContainer.style.display = 'block';
+                statusContainer.style.display = 'none';
+            } else if (searchType === 'status') {
+                dateInputContainer.style.display = 'none';
+                searchInput.style.display = 'none';
+                transactionTypeContainer.style.display = 'none';
+                statusContainer.style.display = 'block';
+            } else {
+                dateInputContainer.style.display = 'none';
+                searchInput.style.display = 'block';
+                transactionTypeContainer.style.display = 'none';
+                statusContainer.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            updateFilters();
+            document.querySelector('select[name="searchType"]').addEventListener('change', updateFilters);
+        });
+    </script>
+</head>
+
+<body>
+    <header>
+        <h1>Transactions</h1>
+    </header>
+
+    <main>
+        <div>
+            <a href="/home" class="button">Back</a>
+        </div>
+
+        <!-- Search Form -->
+        <div class="search-container">
+            <form action="/reports" method="get" style="display: flex; align-items: center;">
+                <select name="searchType" class="search-select">
+                    <option value="" th:selected="${searchType == null}">Select search type</option>
+                    <option value="username" th:selected="${searchType == 'username'}">Username</option>
+                    <option value="bookingOrigin" th:selected="${searchType == 'bookingOrigin'}">Booking Origin</option>
+                    <option value="bookingDestination" th:selected="${searchType == 'bookingDestination'}">Booking
+                        Destination</option>
+                    <option value="startDate" th:selected="${searchType == 'startDate'}">Start Date</option>
+                    <option value="endDate" th:selected="${searchType == 'endDate'}">End Date</option>
+                    <option value="status" th:selected="${searchType == 'status'}">Status</option>
+                    <option value="currency" th:selected="${searchType == 'currency'}">Currency</option>
+                    <option value="transactionType" th:selected="${searchType == 'transactionType'}">Transaction Type
+                    </option>
+                </select>
+                <input type="text" name="searchTerm" placeholder="Enter search term" class="search-input"
+                    th:value="${searchTerm}">
+                <div class="date-input-container">
+                    <input type="date" name="startDate" placeholder="Start Date" class="search-date"
+                        th:value="${startDate}">
+                    <input type="date" name="endDate" placeholder="End Date" class="search-date" th:value="${endDate}">
+                </div>
+                <div class="transaction-type-container">
+                    <select name="transactionType" class="search-select">
+                        <option value="" th:selected="${transactionType == null}">Select transaction type</option>
+                        <option value="charge" th:selected="${transactionType == 'charge'}">Charge</option>
+                        <option value="refund" th:selected="${transactionType == 'refund'}">Refund</option>
+                        <option value="update" th:selected="${transactionType == 'update'}">Update</option>
+                    </select>
+                </div>
+                <div class="status-container">
+                    <select name="status" class="search-select">
+                        <option value="" th:selected="${status == null}">Select status</option>
+                        <option value="CONFIRMED" th:selected="${status == 'CONFIRMED'}">CONFIRMED</option>
+                        <option value="CANCELLED" th:selected="${status == 'CANCELLED'}">CANCELLED</option>
+                    </select>
+                </div>
+                <button type="submit" class="search-button">Search</button>
+                <a href="/reports" class="clear-filters-button">Clear Filters</a>
+            </form>
+        </div>
+
+        <!-- Display Messages -->
+        <div th:if="${not #lists.isEmpty(transactions)}" class="success-message">
+            Results found for <span th:text="${searchTerm}">search term</span>.
+        </div>
+        <div th:if="${#lists.isEmpty(transactions)}" class="message">
+            No transactions found.
+        </div>
+
+        <!-- Transactions Table -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Booking Origin</th>
+                    <th>Booking Destination</th>
+                    <th>Hotel Name</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Status</th>
+                    <th>Currency</th>
+                    <th>Transaction Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="transaction : ${transactions}">
+                    <td th:text="${transaction.booking.user.username}">Username</td>
+                    <td th:text="${transaction.booking.origin}">Booking Origin</td>
+                    <td th:text="${transaction.booking.destination}">Booking Destination</td>
+                    <td th:text="${transaction.booking.hotelName}">Hotel Name</td>
+                    <td th:text="${transaction.booking.startDate}">Start Date</td>
+                    <td th:text="${transaction.booking.endDate}">End Date</td>
+                    <td th:text="${transaction.booking.status}">Status</td>
+                    <td th:text="${transaction.currency}">Currency</td>
+                    <td th:text="${transaction.type}">Transaction Type</td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+</body>
+
+</html>

@@ -134,6 +134,7 @@ public class WebController {
         System.out.println("reports hi");
         System.out.println(searchType);
         System.out.println(endDate);
+        System.out.println(searchTerm);
 
         // Fetch transactions for the company
         List<Transaction> transactions = transactionRepository.findByBookingCompanyId(companyId);

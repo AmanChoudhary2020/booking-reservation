@@ -56,6 +56,31 @@
         th {
             background-color: #002f4b;
             color: #fff;
+            cursor: pointer;
+            position: relative;
+        }
+
+        th::after {
+            content: "";
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            transition: border-color 0.3s;
+        }
+
+        th.sort-asc::after {
+            border-bottom: 5px solid #fff;
+            /* Up arrow */
+        }
+
+        th.sort-desc::after {
+            border-top: 5px solid #fff;
+            /* Down arrow */
         }
 
         tr:nth-child(even) {
@@ -184,6 +209,52 @@
             updateFilters();
             document.querySelector('select[name="searchType"]').addEventListener('change', updateFilters);
         });
+
+        function sortTable(columnIndex, dataType) {
+            const table = document.querySelector('table');
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            const currentIsAscending = table.querySelectorAll('th')[columnIndex].classList.contains('sort-asc');
+            const newIsAscending = !currentIsAscending;
+
+            rows.sort((rowA, rowB) => {
+                const cellA = rowA.querySelectorAll('td')[columnIndex].innerText;
+                const cellB = rowB.querySelectorAll('td')[columnIndex].innerText;
+
+                if (dataType === 'number') {
+                    return newIsAscending
+                        ? parseFloat(cellA) - parseFloat(cellB)
+                        : parseFloat(cellB) - parseFloat(cellA);
+                } else {
+                    return newIsAscending
+                        ? cellA.localeCompare(cellB)
+                        : cellB.localeCompare(cellA);
+                }
+            });
+
+            rows.forEach(row => tbody.appendChild(row));
+            updateSortIndicators(columnIndex, newIsAscending);
+        }
+
+        function updateSortIndicators(columnIndex, isAscending) {
+            const ths = document.querySelectorAll('th');
+            ths.forEach((th, index) => {
+                th.classList.remove('sort-asc', 'sort-desc');
+                if (index === columnIndex) {
+                    th.classList.add(isAscending ? 'sort-asc' : 'sort-desc');
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const ths = document.querySelectorAll('th');
+            ths.forEach((th, index) => {
+                th.addEventListener('click', () => {
+                    const dataType = th.dataset.type || 'string';
+                    sortTable(index, dataType);
+                });
+            });
+        });
     </script>
 </head>
 
@@ -213,16 +284,17 @@
                     <option value="transactionType" th:selected="${searchType == 'transactionType'}">Transaction Type
                     </option>
                 </select>
-                <input type="text" name="searchTerm" placeholder="Enter search term" class="search-input"
-                    th:value="${searchTerm}">
                 <div class="date-input-container">
-                    <input type="date" name="startDate" placeholder="Start Date" class="search-date"
-                        th:value="${startDate}">
-                    <input type="date" name="endDate" placeholder="End Date" class="search-date" th:value="${endDate}">
+                    <input type="date" name="startDate" class="search-date" th:if="${searchType == 'startDate'}">
+                    <input type="date" name="endDate" class="search-date" th:if="${searchType == 'endDate'}">
+                </div>
+                <div class="search-input-container">
+                    <input type="text" name="searchValue" class="search-input" placeholder="Enter value"
+                        th:if="${searchType != 'startDate' && searchType != 'endDate'}">
                 </div>
                 <div class="transaction-type-container">
                     <select name="transactionType" class="search-select">
-                        <option value="" th:selected="${transactionType == null}">Select transaction type</option>
+                        <option value="" th:selected="${transactionType == null}">Select Transaction Type</option>
                         <option value="charge" th:selected="${transactionType == 'charge'}">Charge</option>
                         <option value="refund" th:selected="${transactionType == 'refund'}">Refund</option>
                         <option value="update" th:selected="${transactionType == 'update'}">Update</option>
@@ -230,9 +302,10 @@
                 </div>
                 <div class="status-container">
                     <select name="status" class="search-select">
-                        <option value="" th:selected="${status == null}">Select status</option>
-                        <option value="CONFIRMED" th:selected="${status == 'CONFIRMED'}">CONFIRMED</option>
-                        <option value="CANCELLED" th:selected="${status == 'CANCELLED'}">CANCELLED</option>
+                        <option value="" th:selected="${status == null}">Select Status</option>
+                        <option value="completed" th:selected="${status == 'completed'}">Completed</option>
+                        <option value="pending" th:selected="${status == 'pending'}">Pending</option>
+                        <option value="failed" th:selected="${status == 'failed'}">Failed</option>
                     </select>
                 </div>
                 <button type="submit" class="search-button">Search</button>
@@ -241,26 +314,22 @@
         </div>
 
         <!-- Display Messages -->
-        <div th:if="${not #lists.isEmpty(transactions)}" class="success-message">
-            Results found for <span th:text="${searchTerm}">search term</span>.
-        </div>
-        <div th:if="${#lists.isEmpty(transactions)}" class="message">
-            No transactions found.
-        </div>
+        <div class="message" th:if="${message != null}" th:text="${message}"></div>
+        <div class="message success-message" th:if="${successMessage != null}" th:text="${successMessage}"></div>
 
         <!-- Transactions Table -->
         <table>
             <thead>
                 <tr>
-                    <th>Username</th>
-                    <th>Booking Origin</th>
-                    <th>Booking Destination</th>
-                    <th>Hotel Name</th>
-                    <th>Start Date</th>
-                    <th>End Date</th>
-                    <th>Status</th>
-                    <th>Currency</th>
-                    <th>Transaction Type</th>
+                    <th data-type="string">Username</th>
+                    <th data-type="string">Booking Origin</th>
+                    <th data-type="string">Booking Destination</th>
+                    <th data-type="string">Hotel Name</th>
+                    <th data-type="string">Start Date</th>
+                    <th data-type="string">End Date</th>
+                    <th data-type="string">Status</th>
+                    <th data-type="string">Currency</th>
+                    <th data-type="string">Transaction Type</th>
                 </tr>
             </thead>
             <tbody>

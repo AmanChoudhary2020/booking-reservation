@@ -303,9 +303,8 @@
                 <div class="status-container">
                     <select name="status" class="search-select">
                         <option value="" th:selected="${status == null}">Select Status</option>
-                        <option value="completed" th:selected="${status == 'completed'}">Completed</option>
-                        <option value="pending" th:selected="${status == 'pending'}">Pending</option>
-                        <option value="failed" th:selected="${status == 'failed'}">Failed</option>
+                        <option value="confirmed" th:selected="${status == 'Confirmed'}">Confirmed</option>
+                        <option value="cancelled" th:selected="${status == 'Cancelled'}">Cancelled</option>
                     </select>
                 </div>
                 <button type="submit" class="search-button">Search</button>

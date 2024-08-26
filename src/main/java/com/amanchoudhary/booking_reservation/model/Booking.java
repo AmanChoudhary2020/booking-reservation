@@ -44,7 +44,7 @@ public class Booking {
     private LocalDate endDate;
 
     @Column(name = "status")
-    private String status; // e.g., 'Confirmed', 'Canceled'
+    private String status; // 'Confirmed', 'Canceled'
 
     @Column(name = "last_4_digits_card")
     private String last4DigitsCard;

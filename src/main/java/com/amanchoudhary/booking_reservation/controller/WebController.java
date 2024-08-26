@@ -2,7 +2,6 @@ package com.amanchoudhary.booking_reservation.controller;
 
 import com.amanchoudhary.booking_reservation.service.AppUserService;
 import com.amanchoudhary.booking_reservation.service.BookingService;
-import com.amanchoudhary.booking_reservation.service.TransactionService;
 import com.amanchoudhary.booking_reservation.model.AppUser;
 import com.amanchoudhary.booking_reservation.model.Booking;
 import com.amanchoudhary.booking_reservation.model.Transaction;
@@ -18,12 +17,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -42,9 +38,6 @@ public class WebController {
 
     @Autowired
     private BookingService bookingService;
-
-    @Autowired
-    private TransactionService transactionService;
 
     @GetMapping("/")
     public String redirectToHome() {
@@ -130,11 +123,6 @@ public class WebController {
 
         // Get the company ID for the user
         Long companyId = user.getCompany().getId();
-
-        System.out.println("reports hi");
-        System.out.println(searchType);
-        System.out.println(endDate);
-        System.out.println(searchTerm);
 
         // Fetch transactions for the company
         List<Transaction> transactions = transactionRepository.findByBookingCompanyId(companyId);

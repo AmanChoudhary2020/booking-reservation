@@ -76,7 +76,6 @@
         .invoice-button.cancelled-invoice {
             background-color: #007bff;
             color: #fff;
-            opacity: 1;
             cursor: pointer;
         }
 
@@ -131,6 +130,7 @@
             background-color: #f8d7da;
             color: #721c24;
             font-size: 16px;
+            display: none;
         }
 
         .success-message {
@@ -154,22 +154,32 @@
         .clickable-row {
             cursor: pointer;
             text-decoration: none;
-            transition: background-color 0.3s, text-decoration 0.3s;
+            transition: background-color 0.3s;
         }
 
         .clickable-row:hover {
             background-color: #f1f1f1;
         }
 
-        .clickable-row:not(.cancelled):hover td {
+        .clickable-row:not(.cancelled):not(.past-booking):hover {
             text-decoration: underline;
-            text-decoration-skip-ink: none;
         }
 
-        .clickable-row.cancelled {
+        .past-booking {
             cursor: not-allowed;
+            background-color: #e9ecef;
+        }
+
+        .past-booking:hover {
+            background-color: #e9ecef;
+        }
+
+        .cancelled {
+            cursor: not-allowed;
+            background-color: #e9ecef;
         }
     </style>
+
 </head>
 
 <body>
@@ -244,8 +254,17 @@
 
     <script>
         document.querySelectorAll('.clickable-row').forEach(row => {
+            const startDateText = row.querySelector('td:nth-child(7)').textContent;
+            const startDate = new Date(startDateText);
+            const today = new Date();
+
+            if (startDate < today) {
+                row.classList.add('past-booking');
+                return;
+            }
+
             row.addEventListener('click', function (event) {
-                if (event.target.closest('td:last-child') || this.classList.contains('cancelled')) return;
+                if (event.target.closest('td:last-child') || this.classList.contains('cancelled') || this.classList.contains('past-booking')) return;
 
                 const bookingId = this.dataset.id;
                 window.location.href = `/bookings/${bookingId}`;
@@ -277,6 +296,7 @@
                             statusCell.classList.remove('status-confirmed');
                             statusCell.classList.add('status-cancelled');
                             row.classList.add('cancelled');
+                            row.classList.add('past-booking');
 
                             messageDiv.classList.remove('cancel-message');
                             messageDiv.classList.add('success-message');
@@ -303,6 +323,7 @@
                     });
             });
         });
+
     </script>
 </body>
 

@@ -46,7 +46,6 @@ public class BookingController {
 
     @PostMapping
     public Booking createBooking(@RequestBody Booking booking) {
-        System.out.println("CREATE!!");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
 
@@ -221,7 +220,7 @@ public class BookingController {
         existingBooking.setTaxAmount(updatedBooking.getTaxAmount());
         existingBooking.setTotalAmount(updatedBooking.getTotalAmount());
 
-        // Conditionally update fields based on inventory type
+        // Conditionally update fields
         if (existingInventoryType.equals("Flight")) {
             existingBooking.setAirlineCode(
                     updatedBooking.getAirlineCode() != null ? updatedBooking.getAirlineCode() : existingAirlineCode);
@@ -236,7 +235,7 @@ public class BookingController {
 
         Booking savedBooking = bookingRepository.save(existingBooking);
 
-        // If amounts have changed, record the update in the transaction table
+        // Conditionally update the transaction table
         if (hasAmountChanged) {
             Transaction transaction = new Transaction();
             transaction.setBooking(savedBooking);

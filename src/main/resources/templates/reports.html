@@ -324,10 +324,15 @@
             </form>
         </div>
 
-        <!-- Display No Transactions Message -->
-        <div th:if="${transactions.isEmpty()}" class="no-results">
-            No transactions found for the specified criteria.
-        </div>
+
+        <th:block th:if="${transactions.isEmpty()}">
+            <div th:if="${searchType == null or searchType.isEmpty()}" class="no-results">
+                No transactions.
+            </div>
+            <div th:if="${searchType != null and !searchType.isEmpty()}" class="no-results">
+                No transactions found for the specified criteria.
+            </div>
+        </th:block>
 
         <!-- Transactions Table -->
         <table>
